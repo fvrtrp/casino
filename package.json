@@ -1,0 +1,9 @@
+{
+  "name": "casino",
+  "version": "0.0.1",
+  "description": "su's casino app with express & socket.io",
+  "dependencies": {
+    "express": "^4.18.2",
+    "socket.io": "^4.7.2"
+  }
+}
