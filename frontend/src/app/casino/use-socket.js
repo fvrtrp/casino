@@ -3,10 +3,10 @@ import { socket } from './socket';
 
 export default function useSocket() {
     const [isConnected, setIsConnected] = useState(socket.connected);
-  const [fooEvents, setFooEvents] = useState([]);
+  const [dataEvents, setDataEvents] = useState([]);
     useEffect(() => {
-        function onConnect(payload) {
-          console.log(`zzz connected!`, payload)
+        function onConnect() {
+          console.log(`zzz connected!`, socket)
           setIsConnected(true);
         }
     
@@ -14,21 +14,30 @@ export default function useSocket() {
           setIsConnected(false);
         }
     
-        function onFooEvent(value) {
-          setFooEvents(previous => [...previous, value]);
+        function onData(value) {
+          console.log(`zzz received data`, value)
+          setDataEvents(previous => [...previous, value]);
         }
         console.log(`zzz socketobj`, socket)
         socket.on('connect', onConnect);
         socket.on('disconnect', onDisconnect);
-        socket.on('foo', onFooEvent);
+        socket.on('data', onData);
     
         return () => {
           socket.off('connect', onConnect);
           socket.off('disconnect', onDisconnect);
-          socket.off('foo', onFooEvent);
+          socket.off('data', onData);
         };
       }, []);
 
+    const connect = () => {
+      socket.connect();
+    }
 
-    return { isConnected, fooEvents };
+    const sendData = (data) => {
+      console.log(`zzz sending data`, data)
+      socket.emit('data', data)
+    }
+
+    return { isConnected, dataEvents, connect, sendData };
 }

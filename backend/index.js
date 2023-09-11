@@ -14,8 +14,10 @@ let users = []
 
 socketIO.on('connection', (socket) => {
     console.log(`⚡: ${socket.id} user just connected!`)  
-    socket.on("message", data => {
-      socketIO.emit("messageResponse", data)
+    sendData(socket, `You are connected, ${socket.id}`)
+    socket.on("data", data => {
+      console.log(`data from client`, data, socket.id)
+      //socketIO.emit("messageResponse", data)
     })
 
     socket.on("typing", data => (
@@ -35,9 +37,13 @@ socketIO.on('connection', (socket) => {
     });
 });
 
-app.get("/api", (req, res) => {
-  res.json({message: "Hello"})
-});
+function sendData(socket, data) {
+  socketIO.emit('data', data)
+}
+
+// app.get("/api", (req, res) => {
+//   res.json({message: "Hello"})
+// });
 
    
 http.listen(PORT, () => {
