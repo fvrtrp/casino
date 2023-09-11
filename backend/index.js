@@ -1,31 +1,45 @@
-const express = require('express');
-const app = express();
-const http = require('http');
-const server = http.createServer(app);
-const { Server } = require("socket.io");
-const io = new Server(server);
+const express = require("express")
+const app = express()
+const cors = require("cors")
+const http = require('http').Server(app);
 const PORT = 2000
-
-// app.get('/', (req, res) => {
-//   res.send('<h1>Hello universe</h1>');
-// });
-
-app.get('/', (req, res) => {
-    res.sendFile(__dirname + '/index.html');
-  });
-
-server.listen(PORT, () => {
-  console.log('listening on *:', PORT);
+const socketIO = require('socket.io')(http, {
+    cors: {
+        origin: "http://localhost:3000"
+    }
 });
 
-io.on('connection', (socket) => {
-    console.log('a user connected');
-    socket.broadcast.emit('chat message', 'user joined');
+app.use(cors())
+let users = []
+
+socketIO.on('connection', (socket) => {
+    console.log(`⚡: ${socket.id} user just connected!`)  
+    socket.on("message", data => {
+      socketIO.emit("messageResponse", data)
+    })
+
+    socket.on("typing", data => (
+      socket.broadcast.emit("typingResponse", data)
+    ))
+
+    socket.on("newUser", data => {
+      users.push(data)
+      socketIO.emit("newUserResponse", users)
+    })
+ 
     socket.on('disconnect', () => {
-      console.log('user disconnected');
+      console.log('🔥: A user disconnected');
+      users = users.filter(user => user.socketID !== socket.id)
+      socketIO.emit("newUserResponse", users)
+      socket.disconnect()
     });
-    socket.on('chat message', (msg) => {
-        console.log('message: ' + msg);
-        io.emit('chat message', msg);
-      });
-  });
+});
+
+app.get("/api", (req, res) => {
+  res.json({message: "Hello"})
+});
+
+   
+http.listen(PORT, () => {
+    console.log(`Server listening on ${PORT}`);
+});
