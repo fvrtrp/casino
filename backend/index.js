@@ -6,7 +6,7 @@ import http from "http"
 const httpServer = http.Server(app)
 const PORT = 2000
 import { Server } from "socket.io";
-const socketIO = new Server(httpServer, {
+export const socketIO = new Server(httpServer, {
     cors: {
         origin: "http://localhost:3001"
     }

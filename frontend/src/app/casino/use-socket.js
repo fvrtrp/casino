@@ -15,6 +15,7 @@ export default function useSocket() {
     
         function onData(value) {
           console.log(`zzz received data`, value)
+          handleData(value)
           setDataEvents(previous => [...previous, value]);
         }
         socket.on('connect', onConnect);
@@ -35,6 +36,20 @@ export default function useSocket() {
     const sendData = (data) => {
       console.log(`zzz sending data`, data)
       socket.emit('data', data)
+    }
+
+    const handleData = (data) => {
+      switch(data.type) {
+        case 'update': {
+
+        }
+        case 'broadcast': {
+
+        }
+        default: {
+          console.log(`zzz received default`, data)
+        }
+      }
     }
 
     return { isConnected, dataEvents, connect, sendData };

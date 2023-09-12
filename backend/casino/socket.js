@@ -1,19 +1,30 @@
 import { createRoom } from "./rooms.js";
-
+import { socketIO } from "../index.js";
 let users = []
 let room = null
 
-function sendData(socketIO, data) {
-    socketIO.emit('data', data)
-  }
+function sendData(socket, data) {
+    socket.emit('data', data)
+}
 
-export function setEventListeners(socketIO) {
+function broadcastData(data) {
+  socketIO.emit('data', data)
+}
+
+function throwError(data) {
+  broadcastData({
+    type: 'error',
+    data,
+  })
+}
+
+export function setEventListeners() {
     socketIO.on('connection', (socket) => {
         console.log(`⚡: ${socket.id} user just connected!`)  
-        sendData(socketIO, `You are connected, ${socket.id}`)
+        sendData(socket, `You are connected, ${socket.id}`)
         socket.on("data", data => {
           console.log(`data from client`, data, socket.id)
-          //socketIO.emit("messageResponse", data)
+          socketIO.emit("messageResponse", data)
           handleData(data, socket)
         })
     
@@ -38,11 +49,27 @@ export function setEventListeners(socketIO) {
 export const handleData = (data, socket) => {
     switch(data.type) {
         case 'hostRoom': {
-            room = createRoom(data.data)
+            room = createRoom(data.data, socket.id)
+            sendData(socket, {
+              type: 'Room created',
+              data
+            })
             break
         }
         case 'joinRoom': {
-            room.participants.push(data.data.username)
+            const username = data.data.username ? data.data.username : socket.id
+            room.participants.push({
+              socketId: socket.id,
+              username,
+            })
+            sendData(socket, {
+              type: 'Room joined',
+              data: room
+            })
+            broadcastData({
+              type: 'update',
+              data: `${username} joined`
+            })
             break
         }
         default: {

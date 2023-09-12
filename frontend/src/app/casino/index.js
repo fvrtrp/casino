@@ -13,7 +13,7 @@ export default function Home() {
     if(e) e.preventDefault()
     sendData({
       type: 'joinRoom',
-      data: {code: 420, username: 'suuu'},
+      data: {code: 420, username: ''},
     })
   }
   return (
