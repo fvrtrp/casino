@@ -1,5 +1,6 @@
 {
   "name": "casino",
+  "type": "module",
   "version": "0.0.1",
   "description": "su's casino app with express & socket.io",
   "dependencies": {

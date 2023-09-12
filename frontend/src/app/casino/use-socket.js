@@ -6,7 +6,6 @@ export default function useSocket() {
   const [dataEvents, setDataEvents] = useState([]);
     useEffect(() => {
         function onConnect() {
-          console.log(`zzz connected!`, socket)
           setIsConnected(true);
         }
     
@@ -18,7 +17,6 @@ export default function useSocket() {
           console.log(`zzz received data`, value)
           setDataEvents(previous => [...previous, value]);
         }
-        console.log(`zzz socketobj`, socket)
         socket.on('connect', onConnect);
         socket.on('disconnect', onDisconnect);
         socket.on('data', onData);
