@@ -6,6 +6,10 @@ export default function useSocket() {
     const [isConnected, setIsConnected] = useState(socket.connected);
     const [dataEvents, setDataEvents] = useState([]);
     const setRoom = useStore(state => state.setRoom)
+    const setStatus = useStore(state => state.setStatus)
+    const setId = useStore(state => state.setId)
+    const setCurrentGameIndex = useStore(state => state.setCurrentGameIndex)
+
     useEffect(() => {
         function onConnect() {
           setIsConnected(true);
@@ -42,6 +46,11 @@ export default function useSocket() {
 
     const handleData = (data) => {
       switch(data.type) {
+        case 'set-game': {
+          console.log(`zzz new game started`, data.index)
+          setCurrentGameIndex(data.index)
+          break
+        }
         case 'update-room': {
           setRoom(data.room)
           break
@@ -52,10 +61,16 @@ export default function useSocket() {
         }
         case 'room-joined': {
           setRoom(data.room)
+          setStatus('lobby')
           break
         }
         case 'error': {
           console.log(`zzz`, data.data)
+          break
+        }
+        case 'socketId': {
+          console.log(`zzz connected to server`)
+          setId(data.id)
           break
         }
         default: {

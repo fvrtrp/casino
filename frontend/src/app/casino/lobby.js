@@ -1,11 +1,13 @@
+import HostControls from './host-controls';
 import useStore from './store'
 import useSocket from './use-socket'
 
 export default function Lobby() {
   const { connect, isConnected, dataEvents, sendData } = useSocket();
   const room = useStore(state => state.room)
+  const id = useStore(state => state.id)
 
-  console.log(`zzz lobby`, room)
+  console.log(`zzz lobby`, room, id)
   
   return (
     <div className="p-6">
@@ -23,6 +25,10 @@ export default function Lobby() {
               <div key={player.socketId}>{player.socketId}</div>
             )
           })
+        }
+        {
+          room?.host === id &&
+          <HostControls />
         }
       </div>
     </div>

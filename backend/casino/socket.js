@@ -21,7 +21,10 @@ function throwError(data) {
 export function setEventListeners() {
     socketIO.on('connection', (socket) => {
         console.log(`${socket.id} connected.`)  
-        sendData(socket, `You are connected, ${socket.id}`)
+        sendData(socket, {
+          type: 'socketId',
+          id: socket.id,
+        })
         socket.on("data", data => {
           console.log(`data from client`, data, socket.id)
           socketIO.emit("messageResponse", data)
@@ -45,6 +48,13 @@ export function setEventListeners() {
 
 export const handleData = (data, socket) => {
     switch(data.type) {
+        case 'set-game': {
+          broadcastData({
+            type: 'set-game',
+            index: data.index,
+          })
+          break
+        }
         case 'host-room': {
             room = createRoom(data.data, socket.id)
             sendData(socket, {
@@ -66,10 +76,6 @@ export const handleData = (data, socket) => {
                 socketId: socket.id,
                 username,
               })
-              // sendData(socket, {
-              //   type: 'room-joined',
-              //   room
-              // })
               broadcastData({
                 type: 'update-room',
                 room,
