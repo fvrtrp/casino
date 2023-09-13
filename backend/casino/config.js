@@ -1,10 +1,10 @@
 export const roomConfig = {
     code: null,
     host: null,
-    participants: [],
+    players: [],
 }
 
-export const participantConfig = {
+export const playerConfig = {
     id: null,
     username: null,
 }

@@ -1,9 +1,11 @@
 import { useState, useEffect } from "react";
 import { socket } from './socket';
+import useStore from './store';
 
 export default function useSocket() {
     const [isConnected, setIsConnected] = useState(socket.connected);
-  const [dataEvents, setDataEvents] = useState([]);
+    const [dataEvents, setDataEvents] = useState([]);
+    const setRoom = useStore(state => state.setRoom)
     useEffect(() => {
         function onConnect() {
           setIsConnected(true);
@@ -14,7 +16,7 @@ export default function useSocket() {
         }
     
         function onData(value) {
-          console.log(`zzz received data`, value)
+          //console.log(`zzz received data`, value)
           handleData(value)
           setDataEvents(previous => [...previous, value]);
         }
@@ -40,11 +42,21 @@ export default function useSocket() {
 
     const handleData = (data) => {
       switch(data.type) {
-        case 'update': {
-
+        case 'update-room': {
+          setRoom(data.room)
+          break
         }
-        case 'broadcast': {
-
+        case 'update': {
+          console.log('zzz update: ', data.data)
+          break
+        }
+        case 'room-joined': {
+          setRoom(data.room)
+          break
+        }
+        case 'error': {
+          console.log(`zzz`, data.data)
+          break
         }
         default: {
           console.log(`zzz received default`, data)

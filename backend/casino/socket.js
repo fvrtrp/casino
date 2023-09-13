@@ -20,27 +20,24 @@ function throwError(data) {
 
 export function setEventListeners() {
     socketIO.on('connection', (socket) => {
-        console.log(`⚡: ${socket.id} user just connected!`)  
+        console.log(`${socket.id} connected.`)  
         sendData(socket, `You are connected, ${socket.id}`)
         socket.on("data", data => {
           console.log(`data from client`, data, socket.id)
           socketIO.emit("messageResponse", data)
           handleData(data, socket)
         })
-    
-        socket.on("typing", data => (
-          socket.broadcast.emit("typingResponse", data)
-        ))
-    
-        socket.on("newUser", data => {
-          users.push(data)
-          socketIO.emit("newUserResponse", users)
-        })
      
         socket.on('disconnect', () => {
-          console.log('🔥: A user disconnected');
-          users = users.filter(user => user.socketID !== socket.id)
-          socketIO.emit("newUserResponse", users)
+          console.log(`${socket.id} disconnected.`);
+          if(roomExists()) {
+            const targetUser = room.players.filter(i => i.socketId === socket.id)
+            room.players = room.players.filter(i => i.socketId !== socket.id)
+            broadcastData({
+              type: 'update',
+              data: `${targetUser?.username} left`
+            })
+          }
           socket.disconnect()
         });
     });
@@ -48,28 +45,40 @@ export function setEventListeners() {
 
 export const handleData = (data, socket) => {
     switch(data.type) {
-        case 'hostRoom': {
+        case 'host-room': {
             room = createRoom(data.data, socket.id)
             sendData(socket, {
-              type: 'Room created',
-              data
+              type: 'update-room',
+              room
             })
             break
         }
-        case 'joinRoom': {
+        case 'join-room': {
             const username = data.data.username ? data.data.username : socket.id
-            room.participants.push({
-              socketId: socket.id,
-              username,
-            })
-            sendData(socket, {
-              type: 'Room joined',
-              data: room
-            })
-            broadcastData({
-              type: 'update',
-              data: `${username} joined`
-            })
+            if(!roomExists()) {
+              sendData(socket, {
+                type: 'error',
+                data: 'Room doesn\'t exist',
+              })
+            }
+            else {
+              room.players.push({
+                socketId: socket.id,
+                username,
+              })
+              // sendData(socket, {
+              //   type: 'room-joined',
+              //   room
+              // })
+              broadcastData({
+                type: 'update-room',
+                room,
+              })
+              broadcastData({
+                type: 'update',
+                data: `${username} joined`
+              })
+            }
             break
         }
         default: {
@@ -77,4 +86,8 @@ export const handleData = (data, socket) => {
         }
     }
     console.log(`config now`, room)
+}
+
+function roomExists() {
+  return room && Object.keys(room).length > 0
 }
